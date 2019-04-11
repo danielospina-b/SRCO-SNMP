@@ -11,6 +11,13 @@ import org.snmp4j.smi.OID;
 public class App {
     public static void main(String[] args) throws IOException
     {
+        App snmpapp = new App();
+        //snmpapp.runSNMPManager();
+        snmpapp.runSNMPClient();        
+    }
+
+    
+    public void runSNMPManager() throws IOException {
         System.out.println( "Hello World!" );
         /**
         * Port 161 is used for Read and Other operations
@@ -34,4 +41,30 @@ public class App {
         System.out.println("System Name: " + sysDescr);
         System.out.println("Percentage of Disk Used: " + storagePercent * 100 + "%");
     }
+
+    private void runSNMPClient() throws IOException {
+        OID sysDescr = new OID(".1.3.6.1.2.1.1.1.0");
+        SNMPAgent agent = null;
+        SNMPManager client = null;
+        agent = new SNMPAgent("0.0.0.0/161");
+		agent.start();
+
+		// Since BaseAgent registers some MIBs by default we need to unregister
+		// one before we register our own sysDescr. Normally you would
+		// override that method and register the MIBs that you need
+		agent.unregisterManagedObject(agent.getSnmpv2MIB());
+
+		// Register a system description, use one from you product environment
+		// to test with
+		agent.registerManagedObject(MOCreator.createReadOnly(sysDescr,
+				"Descripcion Personalizada SRCO!"));
+
+		// Setup the client to use our newly started agent
+		// client = new SNMPManager("udp:127.0.0.1/2001");
+		// client.start();
+		// // Get back Value which is set
+		// System.out.println(client.getAsString(sysDescr));
+        System.out.println("Finished");
+    }
+
 }
