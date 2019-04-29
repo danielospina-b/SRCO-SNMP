@@ -13,6 +13,7 @@ import org.snmp4j.smi.Address;
 import org.snmp4j.smi.GenericAddress;
 import org.snmp4j.smi.OID;
 import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.Variable;
 import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
@@ -20,14 +21,17 @@ public class SNMPManager {
 
 Snmp snmp = null;
 String address = null;
+String community = "public";
 
-/**
-* Constructor
-* @param add
-*/
-public SNMPManager(String add) {
-    address = add;
-}
+    /**
+    * Constructor
+    * @param add protocol/ip/port of the target.. form: [protocol]:[ip|host]/[port]
+    * @param community community used by snmp
+    */
+    public SNMPManager(String address, String community) {
+        this.address = address;
+        this.community = community;
+    }
 
     /**
     * Start the Snmp session. If you forget the listen() method you will not
@@ -62,12 +66,28 @@ public SNMPManager(String add) {
     public ResponseEvent get(OID oids[]) throws IOException {
         PDU pdu = new PDU();
         for (OID oid : oids) {
-        pdu.add(new VariableBinding(oid));
+            pdu.add(new VariableBinding(oid));
         }
         pdu.setType(PDU.GET);
         ResponseEvent event = snmp.send(pdu, getTarget(), null);
         if(event != null) {
-        return event;
+            return event;
+        }
+        throw new RuntimeException("GET timed out");
+    }
+
+    public String setAsString(OID oid, String value) throws IOException {
+        ResponseEvent event = set(oid, new OctetString(value));
+        return event.getResponse().get(0).getVariable().toString();
+    }
+
+    public ResponseEvent set(OID oid, Variable value) throws IOException {
+        PDU pdu = new PDU();
+        pdu.add(new VariableBinding(oid, value));
+        pdu.setType(PDU.SET);
+        ResponseEvent event = snmp.send(pdu, getTarget());
+        if(event != null) {
+            return event;
         }
         throw new RuntimeException("GET timed out");
     }
@@ -80,7 +100,7 @@ public SNMPManager(String add) {
     private Target getTarget() {
         Address targetAddress = GenericAddress.parse(address);
         CommunityTarget target = new CommunityTarget();
-        target.setCommunity(new OctetString("public"));
+        target.setCommunity(new OctetString(community));
         target.setAddress(targetAddress);
         target.setRetries(2);
         target.setTimeout(1500);
