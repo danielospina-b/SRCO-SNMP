@@ -1,7 +1,6 @@
 package edu.eci.srco.snmp;
 
 import java.io.IOException;
-
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
@@ -76,11 +75,25 @@ String community = "public";
         throw new RuntimeException("GET timed out");
     }
 
+    /**
+     * Makes a SET Request and return the result as a String
+     * @param oid oid to be used
+     * @param value value to SET
+     * @return makes a GET Request of the same OID returned as a String
+     * @throws IOException ...
+     */
     public String setAsString(OID oid, String value) throws IOException {
         ResponseEvent event = set(oid, new OctetString(value));
         return event.getResponse().get(0).getVariable().toString();
     }
 
+    /**
+     * Makes a SET Request
+     * @param oid OID to be used
+     * @param value Value to SET
+     * @return ResponseEvent
+     * @throws IOException ...
+     */
     public ResponseEvent set(OID oid, Variable value) throws IOException {
         PDU pdu = new PDU();
         pdu.add(new VariableBinding(oid, value));

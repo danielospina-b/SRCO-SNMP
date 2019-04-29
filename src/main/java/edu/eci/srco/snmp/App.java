@@ -1,7 +1,6 @@
 package edu.eci.srco.snmp;
 
 import java.io.IOException;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -11,10 +10,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.snmp4j.smi.OID;
 
-/**
- * Hello world!
- *
- */
 public class App {
     public static void main(String[] args) throws IOException
     {
@@ -48,9 +43,15 @@ public class App {
 
     }
 
-    
-    
-
+    /**
+     * Segun los argumentos organiza los datos necesarios para hacer un SET o GET
+     * @param setString puede ser Null, si lo es hará un GET Request
+     * @param targetString IP o hostname del target
+     * @param oidString OID a usar
+     * @param communityString puede ser Null, si lo es utilizara "public"
+     * @param protocolString puede ser "udp" o "tcp"
+     * @param portString puerto entre 0 y 65535
+     */
     private void doOperation(String setString, String targetString, String oidString, String communityString,
             String protocolString, String portString) {
         if (communityString == null) {
@@ -87,6 +88,13 @@ public class App {
         }
     }
 
+    /**
+     * Organiza el protocolo, target y puerto de la forma [protocol]:[target]/[puerto]
+     * @param protocolString ...
+     * @param targetString ...
+     * @param portString ...
+     * @return ...
+     */
     private String getTransportString(String protocolString, String targetString, String portString) {
         if (protocolString == null) {
             protocolString = "udp";
@@ -97,6 +105,10 @@ public class App {
         return protocolString + ":" + targetString + "/" + portString;
     }
 
+    /**
+     * Metodo para hacer pruebas como SNMP Manager,por defecto no se corre en ningun momento
+     * @throws IOException .. 
+     */
     public void runSNMPManager() throws IOException {
         System.out.println( "Hello World!" );
         /**
@@ -125,6 +137,10 @@ public class App {
 
     }
 
+    /**
+     * Metodo para hacer pruebas como Cliente SNMP, por defecto no se corre en ningun momento
+     * @throws IOException .. 
+     */
     private void runSNMPClient() throws IOException {
         OID sysDescr = new OID(".1.3.6.1.2.1.1.1.0");
         SNMPAgent agent = null;
@@ -150,6 +166,10 @@ public class App {
         System.out.println("Finished");
     }
 
+    /**
+     * Genera las opciones y argumentos al correr el programa (main())
+     * @param options options object
+     */
     private static void generateOptions(Options options) {
         Option set = new Option("s", "set", true, "tells the program if it is a SNMP SET operation and defines its value");
         set.setRequired(false);
